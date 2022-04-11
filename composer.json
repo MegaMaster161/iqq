@@ -1,0 +1,13 @@
+{
+    "name": "lazev/iqq",
+    "description": "iqq extension for bitrix",
+    "require": {
+        "guzzlehttp/guzzle": "6.5"
+    },
+    "authors": [
+        {
+            "name": "Vadim Lazev",
+            "email": "Vadim.Lazev@bia-tech.ru"
+        }
+    ]
+}
