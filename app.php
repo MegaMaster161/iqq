@@ -2,9 +2,10 @@
 include "vendor/autoload.php";
 
 use \GuzzleHttp\Client;
+use \GuzzleHttp\Psr7\Request;
 use \GuzzleHttp\Cookie\CookieJar as CookieHandler;
 use \GuzzleHttp\Command\Guzzle\GuzzleClient;
-use \DOMDocument as Dom;
+
 
 
 
@@ -36,8 +37,8 @@ class AdapterIQQ {
     {
         $this->client = new Client(['cookies' => true]);
         $this->get_landing_context_azure();
-        $this->send_username_info();
-        $this->do_auth_in_azure();
+        // $this->send_username_info();
+        // $this->do_auth_in_azure();
     }
 
     public function get_landing_context_azure()
@@ -45,26 +46,45 @@ class AdapterIQQ {
         $client = $this->client;
         $headers_init = [
             'Connection' => 'keep-alive',
-            'Host'=> 'login.live.com',
+            'Host'=> 'iqq.abbott.com',
             'User-Agent'=> 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.119 Safari/537.36'
          ];
-        $landing = $client->request('GET', 'https://login.live.com', ['headers' => $headers_init]);
-        $raw_html = $landing->getBody()->getContents();
-        $cookie_jar = $client->getConfig('cookies');
-        $cookies_as_array = $cookie_jar->toArray();
+     
+        $landing = $client->request('GET','https://office.com/login', [/*'headers' => $headers_init,*/ 
+                                                                        'debug'=> true,
+                                                                        'allow_redirects' => ['track_redirects' => true]]);
+            $raw_html = $landing->getBody()->getContents();
+            $cookie_jar = $client->getConfig('cookies');
+            $cookie = $cookie_jar->toArray();
+            $headers = $landing->getHeaders();
+            $historyUri = $landing->getHeader(\GuzzleHttp\RedirectMiddleware::HISTORY_HEADER);
+            
+            $data = [
+                'flowToken' => $this->search_in_serverData('sFT', $raw_html),
+                'ctx' => $this->search_in_serverData('sCtx', $raw_html),
+                'requestId' => $this->search_in_serverData('requestId', $raw_html),
+                'apiCanary' => $this->search_in_serverData('apiCanaty', $raw_html),
+                'canary' => $this->search_in_serverData('canary', $raw_html),
+                'correlationId' => $this->search_in_serverData('correlationId', $raw_html),
+                'x-ms-request-id' => $headers['x-ms-request-id'][0]
+            ];
+           // var_dump($data);
+            var_dump($this->parse_uri($historyUri[1]));
+        }
         
-        $regExpFlowToken = '#id="i0327" value="("|)([^"]+)"#';
-        preg_match($regExpFlowToken, $raw_html, $matches);
+        
+    private function parse_uri($link_microsoftonline){
+        return parse_url($link_microsoftonline);
+    }   
+    
 
-        $this->flow_token = $matches[2];
+    private function search_in_serverData($name, $data)
+    {
 
-         foreach($cookies_as_array as $cookie){
-             if($cookie['Name'] == 'uaid'){
-                 $this->uaid = $cookie['Value'];
-                 break;
-             }
-         }
- 
+        $regExp = '/"'.$name.'":"(.*?)"/';
+            preg_match($regExp, $data, $mathes);
+        return $mathes[1];
+
     }
 
     public function send_username_info()
