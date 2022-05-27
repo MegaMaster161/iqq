@@ -291,7 +291,16 @@ class AdapterIQQ {
             
                 private function get_csrf_token($raw_html)
                 {
-            
+                    $regExp = "/'CSRF-TOKEN', '(.*?)'/";
+                        preg_match($regExp, $raw_html, $mathes);
+                    return $mathes[1];
+                }
+
+                private function get_xsrf_token($raw_html)
+                {
+                    $regExp = "/SailPoint.XSRF_TOKEN = '(.*?)';/";
+                    preg_match($regExp, $raw_html, $mathes);
+                    return $mathes[1];
                 }
             
                 public function get_user($user_id)
