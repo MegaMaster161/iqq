@@ -7,7 +7,7 @@ use \GuzzleHttp\Cookie\CookieJar as CookieHandler;
 use \GuzzleHttp\Command\Guzzle\GuzzleClient;
 use Exception;
 
-date_default_timezone_set('Europe/Berlin')
+date_default_timezone_set('Europe/Berlin');
 ini_set('display_errors', 0);
 
 
@@ -324,7 +324,7 @@ class AdapterIQQ {
             
                     $json = [
                         'SAMLResponse' => $this->SAMLResponse,
-                        '' => $this->url_base.$this->urls_path['auth']
+                        'RelayState' => $this->url_base.$this->urls_path['auth']
                     ];
             
             
